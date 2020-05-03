@@ -1,0 +1,15 @@
+name: BetterUHC
+version: 1.0.0
+author: Dams333
+api-version: 1.13
+main: ch.dams333.betterUHC.BetterUHC
+commands:
+  start:
+    permission: betterUHC.commands.start
+    description: Demarrer la partie
+  heal:
+    permission: betterUHC.commands.heal
+    description: Rempli la vie de tous les joueurs
+  revive:
+    permission: betterUHC.commands.revive
+    description: Fait revivre un joueur mort
