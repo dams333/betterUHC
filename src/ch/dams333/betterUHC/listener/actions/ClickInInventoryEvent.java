@@ -112,12 +112,31 @@ public class ClickInInventoryEvent implements Listener {
                 if (it.getType() == Material.ARROW && it.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Revenir en arrière")) {
                     main.adminInventoriesGenerator.openMenuInventory(p);
                 } else {
-
-                    main.gameScenariosManager.changeScenarioStatu(it);
-
-                    main.adminInventoriesGenerator.openScenariosInventory(p);
+                    if(e.getAction() == InventoryAction.PICKUP_ALL) {
+                        main.gameScenariosManager.changeScenarioStatu(it);
+                        main.adminInventoriesGenerator.openScenariosInventory(p);
+                    }else if(e.getAction() == InventoryAction.PICKUP_HALF){
+                        if(main.gameScenariosManager.getGameScenario(it).getArguments() != null) {
+                            main.gameScenariosManager.openArgumentsInventory(p, it);
+                        }else{
+                            main.gameScenariosManager.changeScenarioStatu(it);
+                            main.adminInventoriesGenerator.openScenariosInventory(p);
+                        }
+                    }
                 }
             }
+
+            if(e.getView().getTitle().startsWith(ChatColor.DARK_GREEN + "Scénarios > ")){
+                e.setCancelled(true);
+                if(it.getType() == Material.ARROW){
+                    main.adminInventoriesGenerator.openScenariosInventory(p);
+                }else{
+                    if(it.getType() != Material.AIR){
+                        main.gameScenariosManager.changeArgument(e);
+                    }
+                }
+            }
+
             if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Choisir une équipe")){
                 e.setCancelled(true);
                 main.teamsManager.chooseTeam(it.getItemMeta().getDisplayName(), p);
