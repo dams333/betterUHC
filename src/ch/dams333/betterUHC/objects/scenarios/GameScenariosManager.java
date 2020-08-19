@@ -48,6 +48,7 @@ public class GameScenariosManager {
         gameScenarios.add(new GameScenario("FinalHeal", Arrays.asList(ChatColor.GRAY + "A l'activation du PVP, tous les", ChatColor.GRAY + "joueurs sont soignés"), Material.GOLDEN_APPLE));
         gameScenarios.add(new GameScenario("CoordinateDrops", Arrays.asList(ChatColor.GRAY + "Toutes les 5 minutes,", ChatColor.GRAY + "les coordonées des joueurs sont données"), Material.COMPASS));
         gameScenarios.add(new GameScenario("RandomCrafts", Arrays.asList(ChatColor.GRAY + "Tous les crafts sont mélangés"), Material.SUNFLOWER));
+        gameScenarios.add(new GameScenario("FlowerPower", Arrays.asList(ChatColor.GRAY + "Les fleurs droppent un item aléatoire"), Material.POPPY));
     }
 
     public boolean isScenarioActivate(String name){

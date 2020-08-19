@@ -20,6 +20,12 @@ public class JoinEvent implements Listener {
         Player p = e.getPlayer();
         p.getAttribute(org.bukkit.attribute.Attribute.GENERIC_ATTACK_SPEED).setBaseValue(16.0D);
 
+        if(main.diconnected.contains(p.getUniqueId())){
+            main.diconnected.remove(p.getUniqueId());
+
+            main.rejoin(p);
+        }
+
         if(main.gameStepManager.isStep(GameStep.PREGAME)){
             if(new Location(Bukkit.getWorld("world"), 0, 149, 0).getBlock().getType() != Material.BARRIER){
                 for(int x = -25; x < 25; x++){
@@ -39,7 +45,7 @@ public class JoinEvent implements Listener {
                 p.removePotionEffect(potionEffect.getType());
             }
 
-            if(main.gameVariables.activateTeams){
+            if(main.teamsManager.getActivateTeams() > 0){
                 p.getInventory().setItem(0, main.API.itemStackManager.create(Material.WHITE_BANNER, ChatColor.GOLD + "Sélecteur d'équipe"));
             }
             if(!p.hasPermission("betterUHC.admin")) {

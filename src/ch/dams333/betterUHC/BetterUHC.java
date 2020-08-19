@@ -8,11 +8,15 @@ import ch.dams333.betterUHC.objects.craft.CustomCraftManager;
 import ch.dams333.betterUHC.objects.game.GameManager;
 import ch.dams333.betterUHC.objects.game.GameVariables;
 import ch.dams333.betterUHC.objects.gameStep.GameStepManager;
-import ch.dams333.betterUHC.objects.save.SavesManager;
 import ch.dams333.betterUHC.objects.scenarios.GameScenariosManager;
 import ch.dams333.betterUHC.objects.teams.TeamsManager;
 import ch.dams333.damsLib.DamsLIB;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class BetterUHC extends JavaPlugin {
 
@@ -24,12 +28,15 @@ public class BetterUHC extends JavaPlugin {
     public TeamsManager teamsManager;
     public TeamInventoriesGenerator teamInventoriesGenerator;
     public GameScenariosManager gameScenariosManager;
-    public SavesManager savesManager;
 
     public static DamsLIB API;
 
+    public List<UUID> diconnected;
+
     @Override
     public void onEnable(){
+
+        diconnected = new ArrayList<>();
 
         API = (DamsLIB) getServer().getPluginManager().getPlugin("DamsLIB");
 
@@ -41,20 +48,16 @@ public class BetterUHC extends JavaPlugin {
         this.teamsManager = new TeamsManager(this);
         this.teamInventoriesGenerator = new TeamInventoriesGenerator(this);
         this.gameScenariosManager = new GameScenariosManager(this);
-        this.savesManager = new SavesManager(this);
 
         new ListenerManager(this);
         new CommandsManager(this);
 
-        savesManager.deserializeSaves();
 
         getServer().resetRecipes();
 
     }
 
-    @Override
-    public void onDisable(){
-        savesManager.serializeSaves();
+    public void rejoin(Player p) {
+        gameManager.rejoin(p);
     }
-
 }

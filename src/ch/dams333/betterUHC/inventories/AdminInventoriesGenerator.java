@@ -2,8 +2,8 @@ package ch.dams333.betterUHC.inventories;
 
 import ch.dams333.betterUHC.BetterUHC;
 import ch.dams333.betterUHC.objects.craft.CustomCraft;
-import ch.dams333.betterUHC.objects.save.Save;
 import ch.dams333.betterUHC.objects.scenarios.GameScenario;
+import ch.dams333.betterUHC.objects.teams.Team;
 import net.minecraft.server.v1_15_R1.NBTTagCompound;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -28,11 +28,9 @@ public class AdminInventoriesGenerator {
     public void openMenuInventory(Player p){
         Inventory inv = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Configuration");
 
-        inv.setItem(0, main.API.itemStackManager.create(Material.COMMAND_BLOCK, ChatColor.GREEN + "Charger une config"));
         inv.setItem(2, main.API.itemStackManager.create(Material.CLOCK, ChatColor.GOLD + "Timers"));
         inv.setItem(4, main.API.itemStackManager.create(Material.WHITE_BANNER, ChatColor.LIGHT_PURPLE + "Equipes"));
         inv.setItem(6, main.API.itemStackManager.create(Material.BARRIER, ChatColor.DARK_RED + "Bordure du monde"));
-        inv.setItem(8,main.API.itemStackManager.create(Material.WHITE_STAINED_GLASS, ChatColor.GREEN + "Sauvegarder la config"));
         inv.setItem(22, main.API.itemStackManager.create(Material.CHEST, ChatColor.BLUE + "Inventaire de départ"));
         inv.setItem(29, main.API.itemStackManager.create(Material.CRAFTING_TABLE, ChatColor.DARK_BLUE + "Crafts customisés"));
         inv.setItem(33, main.API.itemStackManager.create(Material.ENDER_CHEST, ChatColor.DARK_PURPLE + "Scénarios"));
@@ -111,142 +109,31 @@ public class AdminInventoriesGenerator {
     }
 
     public void openTeamsInventory(Player p) {
-        Inventory inv = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Configuration > Equipes");
 
-        if(main.gameVariables.activateTeams){
-            inv.setItem(2, main.API.itemStackManager.create(Material.EMERALD_BLOCK, ChatColor.GREEN + "Equipes activées", Arrays.asList(ChatColor.GRAY + "Cliquer pour modifier")));
-            if(main.gameVariables.infiniteTeams){
-                if(main.gameVariables.whiteTeam < 0) {
-                    inv.setItem(20, main.API.itemStackManager.create(Material.WHITE_WOOL, ChatColor.GOLD + "Equipe blanche [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
+            int activate = main.teamsManager.getActivateTeams();
+            int teams = main.teamsManager.getTeams().size();
+
+            Inventory inv = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Configuration > Equipes (" + activate + "/" + teams + ")");
+            int slot = 0;
+            for(Team team : main.teamsManager.getTeams()){
+                if(!team.isActivated()){
+                    inv.addItem(main.API.itemStackManager.create(team.getBanner(), team.getChatColor() + team.getName()));
                 }else{
-                    inv.setItem(20, main.API.itemStackManager.create(Material.WHITE_WOOL, ChatColor.GOLD + "Equipe blanche [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
+                    ItemStack it = main.API.itemStackManager.create(team.getBanner(), team.getChatColor() + team.getName());
+                    ItemMeta m = it.getItemMeta();
+                    m.setLore(Arrays.asList(ChatColor.GREEN + "Activée"));
+                    it.setItemMeta(m);
+                    inv.addItem(it);
                 }
-                if(main.gameVariables.orangeTeam < 0) {
-                    inv.setItem(21, main.API.itemStackManager.create(Material.ORANGE_WOOL, ChatColor.GOLD + "Equipe orange [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(21, main.API.itemStackManager.create(Material.ORANGE_WOOL, ChatColor.GOLD + "Equipe orange [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
+                slot = slot + 1;
+                if(team.getChatColor().equals(ChatColor.GRAY)){
+                    inv.setItem(slot, main.API.itemStackManager.create(Material.BLACK_STAINED_GLASS_PANE, " "));
+                    slot = slot + 1;
                 }
-                if(main.gameVariables.magentaTeam < 0) {
-                    inv.setItem(22, main.API.itemStackManager.create(Material.MAGENTA_WOOL, ChatColor.GOLD + "Equipe magenta [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(22, main.API.itemStackManager.create(Material.MAGENTA_WOOL, ChatColor.GOLD + "Equipe magenta [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.lightBlueTeam < 0) {
-                    inv.setItem(23, main.API.itemStackManager.create(Material.LIGHT_BLUE_WOOL, ChatColor.GOLD + "Equipe bleue claire [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(23, main.API.itemStackManager.create(Material.LIGHT_BLUE_WOOL, ChatColor.GOLD + "Equipe bleue claire [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.yellowTeam < 0) {
-                    inv.setItem(24, main.API.itemStackManager.create(Material.YELLOW_WOOL, ChatColor.GOLD + "Equipe jaune [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(24, main.API.itemStackManager.create(Material.YELLOW_WOOL, ChatColor.GOLD + "Equipe jaune [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.limeTeam < 0) {
-                    inv.setItem(29, main.API.itemStackManager.create(Material.LIME_WOOL, ChatColor.GOLD + "Equipe verte clair [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(29, main.API.itemStackManager.create(Material.LIME_WOOL, ChatColor.GOLD + "Equipe verte clair [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.pinkTeam < 0) {
-                    inv.setItem(30, main.API.itemStackManager.create(Material.PINK_WOOL, ChatColor.GOLD + "Equipe rose [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(30, main.API.itemStackManager.create(Material.PINK_WOOL, ChatColor.GOLD + "Equipe rose [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.grayTeam < 0) {
-                    inv.setItem(31, main.API.itemStackManager.create(Material.GRAY_WOOL, ChatColor.GOLD + "Equipe grise [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(31, main.API.itemStackManager.create(Material.GRAY_WOOL, ChatColor.GOLD + "Equipe grise [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.lightGrayTeam < 0) {
-                    inv.setItem(32, main.API.itemStackManager.create(Material.LIGHT_GRAY_WOOL, ChatColor.GOLD + "Equipe grise claire [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(32, main.API.itemStackManager.create(Material.LIGHT_GRAY_WOOL, ChatColor.GOLD + "Equipe grise claire [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.cyanTeam < 0) {
-                    inv.setItem(33, main.API.itemStackManager.create(Material.CYAN_WOOL, ChatColor.GOLD + "Equipe cyan [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(33, main.API.itemStackManager.create(Material.CYAN_WOOL, ChatColor.GOLD + "Equipe cyan [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.purpleTeam < 0) {
-                    inv.setItem(38, main.API.itemStackManager.create(Material.PURPLE_WOOL, ChatColor.GOLD + "Equipe violette [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(38, main.API.itemStackManager.create(Material.PURPLE_WOOL, ChatColor.GOLD + "Equipe violette [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.blueTeam < 0) {
-                    inv.setItem(39, main.API.itemStackManager.create(Material.BLUE_WOOL, ChatColor.GOLD + "Equipe bleue [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(39, main.API.itemStackManager.create(Material.BLUE_WOOL, ChatColor.GOLD + "Equipe bleue [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.brownTeam < 0) {
-                    inv.setItem(40, main.API.itemStackManager.create(Material.BROWN_WOOL, ChatColor.GOLD + "Equipe brune [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(40, main.API.itemStackManager.create(Material.BROWN_WOOL, ChatColor.GOLD + "Equipe brune [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.greenTeam < 0) {
-                    inv.setItem(41, main.API.itemStackManager.create(Material.GREEN_WOOL, ChatColor.GOLD + "Equipe verte [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(41, main.API.itemStackManager.create(Material.GREEN_WOOL, ChatColor.GOLD + "Equipe verte [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.redTeam < 0) {
-                    inv.setItem(42, main.API.itemStackManager.create(Material.RED_WOOL, ChatColor.GOLD + "Equipe rouge [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(42, main.API.itemStackManager.create(Material.RED_WOOL, ChatColor.GOLD + "Equipe rouge [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-                if(main.gameVariables.blackTeam < 0) {
-                    inv.setItem(49, main.API.itemStackManager.create(Material.BLACK_WOOL, ChatColor.GOLD + "Equipe noire [Activée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }else{
-                    inv.setItem(49, main.API.itemStackManager.create(Material.BLACK_WOOL, ChatColor.GOLD + "Equipe noire [Désactivée]", Arrays.asList(ChatColor.LIGHT_PURPLE + "Cliquer pour modifier")));
-                }
-            }else{
-                inv.setItem(20, main.API.itemStackManager.create(Material.WHITE_WOOL, ChatColor.GOLD + "Equipe blanche [" + main.gameVariables.whiteTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(21, main.API.itemStackManager.create(Material.ORANGE_WOOL, ChatColor.GOLD + "Equipe orange [" + main.gameVariables.orangeTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(22, main.API.itemStackManager.create(Material.MAGENTA_WOOL, ChatColor.GOLD + "Equipe magenta [" + main.gameVariables.magentaTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(23, main.API.itemStackManager.create(Material.LIGHT_BLUE_WOOL, ChatColor.GOLD + "Equipe bleue claire [" + main.gameVariables.lightBlueTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(24, main.API.itemStackManager.create(Material.YELLOW_WOOL, ChatColor.GOLD + "Equipe jaune [" + main.gameVariables.yellowTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(29, main.API.itemStackManager.create(Material.LIME_WOOL, ChatColor.GOLD + "Equipe verte clair [" + main.gameVariables.limeTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(30, main.API.itemStackManager.create(Material.PINK_WOOL, ChatColor.GOLD + "Equipe rose [" + main.gameVariables.pinkTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(31, main.API.itemStackManager.create(Material.GRAY_WOOL, ChatColor.GOLD + "Equipe grise [" + main.gameVariables.grayTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(32, main.API.itemStackManager.create(Material.LIGHT_GRAY_WOOL, ChatColor.GOLD + "Equipe grise claire [" + main.gameVariables.lightGrayTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(33, main.API.itemStackManager.create(Material.CYAN_WOOL, ChatColor.GOLD + "Equipe cyan [" + main.gameVariables.cyanTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(38, main.API.itemStackManager.create(Material.PURPLE_WOOL, ChatColor.GOLD + "Equipe violette [" + main.gameVariables.purpleTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(39, main.API.itemStackManager.create(Material.BLUE_WOOL, ChatColor.GOLD + "Equipe bleue [" + main.gameVariables.blueTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(40, main.API.itemStackManager.create(Material.BROWN_WOOL, ChatColor.GOLD + "Equipe brune [" + main.gameVariables.brownTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(41, main.API.itemStackManager.create(Material.GREEN_WOOL, ChatColor.GOLD + "Equipe verte [" + main.gameVariables.greenTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(42, main.API.itemStackManager.create(Material.RED_WOOL, ChatColor.GOLD + "Equipe rouge [" + main.gameVariables.redTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
-                inv.setItem(49, main.API.itemStackManager.create(Material.BLACK_WOOL, ChatColor.GOLD + "Equipe noire [" + main.gameVariables.blackTeam + " places]", Arrays.asList(ChatColor.GREEN + "Clique gauche pour ajouter", ChatColor.RED + "Clique droit pour enlever")));
             }
-        }else{
-            inv.setItem(2, main.API.itemStackManager.create(Material.REDSTONE_BLOCK, ChatColor.RED + "Equipes désactivées", Arrays.asList(ChatColor.GRAY + "Cliquer pour modifier")));
+            inv.setItem(53, main.API.itemStackManager.create(Material.ARROW, ChatColor.GRAY + "Revenir en arrière"));
+            p.openInventory(inv);
 
-            inv.setItem(20, main.API.itemStackManager.create(Material.WHITE_WOOL, ChatColor.GRAY + "Equipe blanche [Désactivée]"));
-            inv.setItem(21, main.API.itemStackManager.create(Material.ORANGE_WOOL, ChatColor.GRAY + "Equipe orange [Désactivée]"));
-            inv.setItem(22, main.API.itemStackManager.create(Material.MAGENTA_WOOL, ChatColor.GRAY + "Equipe magenta [Désactivée]"));
-            inv.setItem(23, main.API.itemStackManager.create(Material.LIGHT_BLUE_WOOL, ChatColor.GRAY + "Equipe bleue claire [Désactivée]"));
-            inv.setItem(24, main.API.itemStackManager.create(Material.YELLOW_WOOL, ChatColor.GRAY + "Equipe jaune [Désactivée]"));
-            inv.setItem(29, main.API.itemStackManager.create(Material.LIME_WOOL, ChatColor.GRAY + "Equipe verte clair [Désactivée]"));
-            inv.setItem(30, main.API.itemStackManager.create(Material.PINK_WOOL, ChatColor.GRAY + "Equipe rose [Désactivée]"));
-            inv.setItem(31, main.API.itemStackManager.create(Material.GRAY_WOOL, ChatColor.GRAY + "Equipe grise [Désactivée]"));
-            inv.setItem(32, main.API.itemStackManager.create(Material.LIGHT_GRAY_WOOL, ChatColor.GRAY + "Equipe grise claire [Désactivée]"));
-            inv.setItem(33, main.API.itemStackManager.create(Material.CYAN_WOOL, ChatColor.GRAY + "Equipe cyan [Désactivée]"));
-            inv.setItem(38, main.API.itemStackManager.create(Material.PURPLE_WOOL, ChatColor.GRAY + "Equipe violette [Désactivée]"));
-            inv.setItem(39, main.API.itemStackManager.create(Material.BLUE_WOOL, ChatColor.GRAY + "Equipe bleue [Désactivée]"));
-            inv.setItem(40, main.API.itemStackManager.create(Material.BROWN_WOOL, ChatColor.GRAY + "Equipe brune [Désactivée]"));
-            inv.setItem(41, main.API.itemStackManager.create(Material.GREEN_WOOL, ChatColor.GRAY + "Equipe verte [Désactivée]"));
-            inv.setItem(42, main.API.itemStackManager.create(Material.RED_WOOL, ChatColor.GRAY + "Equipe rouge [Désactivée]"));
-            inv.setItem(49, main.API.itemStackManager.create(Material.BLACK_WOOL, ChatColor.GRAY + "Equipe noire [Désactivée]"));
-        }
-
-        if(main.gameVariables.activateTeams) {
-            if (main.gameVariables.infiniteTeams) {
-                inv.setItem(6, main.API.itemStackManager.create(Material.EMERALD, ChatColor.GREEN + "Equipes infinies", Arrays.asList(ChatColor.GRAY + "Cliquer pour modifier")));
-            } else {
-                inv.setItem(6, main.API.itemStackManager.create(Material.REDSTONE, ChatColor.RED + "Equipes limitées", Arrays.asList(ChatColor.GRAY + "Cliquer pour modifier")));
-            }
-        }
-
-
-
-        inv.setItem(53, main.API.itemStackManager.create(Material.ARROW, ChatColor.GRAY + "Revenir en arrière"));
-        p.openInventory(inv);
     }
 
     public void openBoderInventory(Player p) {
@@ -383,24 +270,7 @@ public class AdminInventoriesGenerator {
         p.openInventory(inv);
     }
 
-    public void openSaveInventory(Player p) {
-        p.closeInventory();
-        p.sendMessage(ChatColor.GOLD + "Tape le nom de la config dans le chat");
-        main.savesManager.addToSave(p);
-    }
-
-    public void openLoadInventory(Player p) {
-        Inventory inv = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Configuration > Charger");
-
-        for(Save save : main.savesManager.getSavedConfigs()){
-            inv.addItem(main.API.itemStackManager.create(Material.WHITE_STAINED_GLASS, ChatColor.GOLD + save.getSaveName(), Arrays.asList(ChatColor.GREEN + "Clique gauche pour charger", ChatColor.RED + "Clique droit pour supprimer")));
-        }
-
-        inv.setItem(53, main.API.itemStackManager.create(Material.ARROW, ChatColor.GRAY + "Revenir en arrière"));
-        p.openInventory(inv);
-    }
-
-    public void openCraftInventory(Player p) {
+         public void openCraftInventory(Player p) {
         Inventory inv = Bukkit.createInventory(null, 54, ChatColor.DARK_GREEN + "Configuration > Crafts");
 
         for(int i = 0; i < 54; i++){

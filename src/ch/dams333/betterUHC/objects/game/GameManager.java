@@ -6,6 +6,7 @@ import ch.dams333.betterUHC.objects.game.tasks.BombTask;
 import ch.dams333.betterUHC.objects.game.tasks.Bordertask;
 import ch.dams333.betterUHC.objects.game.tasks.GameTask;
 import ch.dams333.betterUHC.objects.gameStep.GameStep;
+import ch.dams333.betterUHC.objects.teams.Team;
 import ch.dams333.damsLib.ScoreboardSign;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -34,6 +35,59 @@ public class GameManager {
         revive = new ArrayList<>();
         bestPVE = new ArrayList<>();
         noFall = new ArrayList<>();
+    }
+
+    public void rejoin(Player p) {
+        for(Player pl : scoreboards.keySet()){
+            if(pl.getUniqueId().equals(p.getUniqueId())){
+                scoreboards.remove(pl);
+                ScoreboardSign scoreboardSign = new ScoreboardSign(p, ChatColor.GOLD + "UHC");
+                scoreboardSign.create();
+                scoreboardSign.setLine(0, "§a");
+                scoreboardSign.setLine(1, ChatColor.WHITE + "Joueurs restants: " + ChatColor.GREEN + inGamePlayers.size() + "/" + startedPlayerNumber);
+                if(main.gameVariables.afficheTimers){
+                    scoreboardSign.setLine(2, "§c");
+                    scoreboardSign.setLine(3, ChatColor.WHITE + "PVP: " + ChatColor.GOLD + "00:00");
+                    scoreboardSign.setLine(4, ChatColor.WHITE + "Réduction: " + ChatColor.GOLD + "00:00");
+                    scoreboardSign.setLine(5, ChatColor.WHITE + "Temps de jeu: " + ChatColor.GOLD + "00:00");
+                    if(main.gameVariables.afficheBorder){
+                        scoreboardSign.setLine(6, "§r");
+                        scoreboardSign.setLine(7, ChatColor.WHITE + "Bordure:" + ChatColor.YELLOW + " ±" + main.gameVariables.preBorder);
+                    }
+                }else{
+                    if(main.gameVariables.afficheBorder){
+                        scoreboardSign.setLine(2, "§c");
+                        scoreboardSign.setLine(3, "§r");
+                        scoreboardSign.setLine(4, ChatColor.WHITE + "Bordure:" + ChatColor.YELLOW + " ±" + ChatColor.YELLOW + main.gameVariables.preBorder);
+                    }
+                }
+                this.scoreboards.put(p, scoreboardSign);
+            }
+        }
+        for(Player pl : death.keySet()){
+            if (pl.getUniqueId().equals(p.getUniqueId())) {
+                death.put(p, this.death.get(pl));
+                death.remove(pl);
+            }
+        }
+        for(Player pl : revive){
+            if (pl.getUniqueId().equals(p.getUniqueId())) {
+                revive.remove(pl);
+                revive.add(p);
+            }
+        }
+        for(Player pl : bestPVE){
+            if (pl.getUniqueId().equals(p.getUniqueId())) {
+                bestPVE.remove(pl);
+                bestPVE.add(p);
+            }
+        }
+        for(Player pl : noFall){
+            if (pl.getUniqueId().equals(p.getUniqueId())) {
+                noFall.remove(pl);
+                noFall.add(p);
+            }
+        }
     }
 
     private GameTask gameTask;
@@ -276,168 +330,40 @@ public class GameManager {
     }
 
     private void spreadPlayers() {
-        if(!main.gameVariables.activateTeams) {
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de " + p.getName());
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
+        if(main.teamsManager.getActivateTeams() > 0){
+            for(Team team : main.teamsManager.getTeams()){
+                if(team.isActivated()) {
+                    Bukkit.broadcastMessage(ChatColor.GRAY + "Téléportation de l'équipe " + team.getName());
+                    Location spawn = new Location(Bukkit.getWorld("world"), main.API.random(-800, 800), 255, main.API.random(-800, 800));
+                    spawn = transformSpawn(spawn);
+                    spawn.add(0, 1, 0);
+                    for (Player p : team.getPlayers()) {
+                        p.teleport(spawn);
+                    }
+                }
             }
         }else{
-            if(main.teamsManager.white.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe blanche");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.white){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.orange.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe orange");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.orange){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.magenta.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe magenta");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.magenta){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.lightblue.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe bleue calir");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.lightblue){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.yellow.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe jaune");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.yellow){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.lime.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe verte clair");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.lime){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.pink.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe rose");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.pink){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.gray.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe grise");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.gray){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.lightgray.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe grise calir");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.lightgray){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.cyan.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe cyan");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.cyan){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.purple.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe violette");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.purple){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.blue.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe bleue");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.brown){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.green.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe verte");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.green){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.red.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe rouge");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.red){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
-            }
-            if(main.teamsManager.black.size() >= 1){
-                Bukkit.broadcastMessage(ChatColor.DARK_GREEN + "Téléportation de l'équipe noire");
-                int x = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                int z = main.API.random(main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 3), main.gameVariables.preBorder - Math.round(main.gameVariables.preBorder / 10));
-                if(main.API.random(0, 1) == 1) x = x * (-1);
-                if(main.API.random(0, 1) == 1) z = z * (-1);
-                for(Player p : main.teamsManager.black){
-                    p.teleport(new Location(Bukkit.getWorld("world"), x, 150, z));
-                }
+            for(Player p :Bukkit.getOnlinePlayers()){
+                    Bukkit.broadcastMessage(ChatColor.GRAY + "Téléportation de " + p.getName());
+                    Location spawn = new Location(Bukkit.getWorld("world"), main.API.random(-800, 800), 255, main.API.random(-800, 800));
+                    spawn = transformSpawn(spawn);
+                    spawn.add(0, 1, 0);
+                    p.teleport(spawn);
             }
         }
     }
+
+    private Location transformSpawn(Location loc){
+        while (loc.getBlock().getType() == Material.AIR){
+            loc.add(0, -1, 0);
+        }
+        if(loc.getBlock().getType() == Material.WATER){
+            loc = new Location(Bukkit.getWorld("world"), main.API.random(-800, 800), 255, main.API.random(-800, 800));
+            loc = transformSpawn(loc);
+        }
+        return loc;
+    }
+
 
     private void createScoreboard() {
         for(Player p : Bukkit.getOnlinePlayers()){
@@ -688,163 +614,30 @@ public class GameManager {
     }
 
     private void checkWin() {
-        if(main.gameVariables.activateTeams){
-            String colorWinned = "";
-            boolean win = false;
-            for(Player p : inGamePlayers){
-                if(main.teamsManager.isInTeam(p, "white")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "w";
-                        win = true;
-                    }else if(!colorWinned.equals("w")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "orange")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "o";
-                        win = true;
-                    }else if(!colorWinned.equals("o")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "magenta")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "m";
-                        win = true;
-                    }else if(!colorWinned.equals("m")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "lightblue")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "lb";
-                        win = true;
-                    }else if(!colorWinned.equals("lb")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "yellow")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "y";
-                        win = true;
-                    }else if(!colorWinned.equals("y")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "lime")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "l";
-                        win = true;
-                    }else if(!colorWinned.equals("l")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "pink")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "pin";
-                        win = true;
-                    }else if(!colorWinned.equals("pin")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "gray")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "g";
-                        win = true;
-                    }else if(!colorWinned.equals("g")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "lightgray")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "lg";
-                        win = true;
-                    }else if(!colorWinned.equals("lg")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "cyan")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "c";
-                        win = true;
-                    }else if(!colorWinned.equals("c")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "purple")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "pu";
-                        win = true;
-                    }else if(!colorWinned.equals("pu")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "blue")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "bl";
-                        win = true;
-                    }else if(!colorWinned.equals("bl")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "brown")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "br";
-                        win = true;
-                    }else if(!colorWinned.equals("br")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "green")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "gre";
-                        win = true;
-                    }else if(!colorWinned.equals("gre")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "red")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "r";
-                        win = true;
-                    }else if(!colorWinned.equals("r")){
-                        win = false;
-                    }
-                }
-                if(main.teamsManager.isInTeam(p, "black")){
-                    if(colorWinned.equals("")) {
-                        colorWinned = "bla";
-                        win = true;
-                    }else if(!colorWinned.equals("bla")){
-                        win = false;
+        if(main.teamsManager.getActivateTeams() > 0){
+            Team win = null;
+            boolean good = true;
+            for(Team team : main.teamsManager.getTeams()){
+                if(team.isActivated()){
+                    if(team.getPlayers().size() > 0){
+                        if(win == null) {
+                            win = team;
+                        }else{
+                            good = false;
+                        }
                     }
                 }
             }
-            if(win){
+            if(good){
                 main.gameStepManager.setStep(GameStep.END);
-                if(colorWinned.equals("w"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe blanche remporte la partie !");
-                if(colorWinned.equals("o"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe orange remporte la partie !");
-                if(colorWinned.equals("m"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe magenta remporte la partie !");
-                if(colorWinned.equals("lb"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe bleue clair remporte la partie !");
-                if(colorWinned.equals("y"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe jaune remporte la partie !");
-                if(colorWinned.equals("l"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe verte clair remporte la partie !");
-                if(colorWinned.equals("pu"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe violette remporte la partie !");
-                if(colorWinned.equals("g"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe grise remporte la partie !");
-                if(colorWinned.equals("lg"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe grise clair remporte la partie !");
-                if(colorWinned.equals("c"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe cyan remporte la partie !");
-                if(colorWinned.equals("pin"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe rose remporte la partie !");
-                if(colorWinned.equals("bl"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe bleue remporte la partie !");
-                if(colorWinned.equals("br"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe brown remporte la partie !");
-                if(colorWinned.equals("gre"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe verte remporte la partie !");
-                if(colorWinned.equals("r"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe rouge remporte la partie !");
-                if(colorWinned.equals("bla"))  Bukkit.broadcastMessage(ChatColor.BOLD + "" + ChatColor.GOLD + "L'équipe noire remporte la partie !");
+                Bukkit.broadcastMessage(ChatColor.GOLD + "L'équipe " + ChatColor.BOLD + win.getName() + ChatColor.RESET + "" + ChatColor.GOLD +  " remporte la partie !");
             }
-        }else{
-            if(this.inGamePlayers.size() == 1){
+        }else {
+            if (this.inGamePlayers.size() == 1) {
                 main.gameStepManager.setStep(GameStep.END);
                 Bukkit.broadcastMessage(ChatColor.BOLD + inGamePlayers.get(0).getDisplayName() + ChatColor.GOLD + " remporte la partie !");
             }
         }
     }
+
 }

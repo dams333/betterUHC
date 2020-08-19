@@ -53,12 +53,14 @@ public class LongShotEvent implements Listener {
             }
         }
         if(main.gameScenariosManager.isScenarioActivate("bowinfos")) {
-            if (e.getDamager() instanceof Arrow){
-                if(e.getEntity() instanceof Player){
-                    if(((Arrow) e.getDamager()).getShooter() instanceof Player){
-                        Player shooted = (Player) e.getEntity();
-                        Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
-                        shooter.sendMessage(ChatColor.GOLD + "Tu as touché " + shooted.getDisplayName() + ChatColor.GOLD + ", il lui reste " + ChatColor.RED + String.valueOf(shooted.getHealth() - e.getDamage()) + "❤");
+            if(!e.isCancelled()) {
+                if (e.getDamager() instanceof Arrow) {
+                    if (e.getEntity() instanceof Player) {
+                        if (((Arrow) e.getDamager()).getShooter() instanceof Player) {
+                            Player shooted = (Player) e.getEntity();
+                            Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
+                            shooter.sendMessage(ChatColor.GOLD + "Tu as touché " + shooted.getDisplayName() + ChatColor.GOLD + ", il lui reste " + ChatColor.RED + String.valueOf(shooted.getHealth() - e.getFinalDamage()) + "❤");
+                        }
                     }
                 }
             }

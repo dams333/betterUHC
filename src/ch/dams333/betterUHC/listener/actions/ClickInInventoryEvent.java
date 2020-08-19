@@ -10,6 +10,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
@@ -59,12 +60,6 @@ public class ClickInInventoryEvent implements Listener {
                 if(it.getType() == Material.ENDER_CHEST){
                     main.adminInventoriesGenerator.openScenariosInventory(p);
                 }
-                if(it.getType() == Material.WHITE_STAINED_GLASS){
-                    main.adminInventoriesGenerator.openSaveInventory(p);
-                }
-                if(it.getType() == Material.COMMAND_BLOCK){
-                    main.adminInventoriesGenerator.openLoadInventory(p);
-                }
                 if(it.getType() == Material.CRAFTING_TABLE){
                     main.adminInventoriesGenerator.openCraftInventory(p);
                 }
@@ -112,20 +107,6 @@ public class ClickInInventoryEvent implements Listener {
                     main.adminInventoriesGenerator.openCraftsListInventory(p);
                 }
             }
-            if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Configuration > Charger")) {
-                e.setCancelled(true);
-                if (it.getType() == Material.ARROW && it.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Revenir en arrière")) {
-                    main.adminInventoriesGenerator.openMenuInventory(p);
-                } else {
-                    if(e.getAction() == InventoryAction.PICKUP_ALL) {
-                        main.savesManager.loadSave(it.getItemMeta().getDisplayName().replaceAll("§6", ""), p);
-                    }
-                    if(e.getAction() == InventoryAction.PICKUP_HALF){
-                        main.savesManager.removeSave(it.getItemMeta().getDisplayName().replaceAll("§6", ""), p);
-                        main.adminInventoriesGenerator.openLoadInventory(p);
-                    }
-                }
-            }
             if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Configuration > Scénarios")) {
                 e.setCancelled(true);
                 if (it.getType() == Material.ARROW && it.getItemMeta().getDisplayName().equals(ChatColor.GRAY + "Revenir en arrière")) {
@@ -137,12 +118,16 @@ public class ClickInInventoryEvent implements Listener {
                     main.adminInventoriesGenerator.openScenariosInventory(p);
                 }
             }
-            if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Sélection d'une équipe")) {
+            if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Choisir une équipe")){
                 e.setCancelled(true);
+                main.teamsManager.chooseTeam(it.getItemMeta().getDisplayName(), p);
+                p.closeInventory();
 
-                main.teamsManager.joinTeam(p, it.getType());
-
-                main.teamInventoriesGenerator.openMenuInventory(p);
+                ItemStack it2 = main.teamsManager.getTeamBanner(p);
+                ItemMeta m = it2.getItemMeta();
+                m.setDisplayName(ChatColor.GOLD + "Sélecteur d'équipe");
+                it2.setItemMeta(m);
+                p.getInventory().setItem(0, it2);
             }
             if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Configuration > Affichage")) {
                 e.setCancelled(true);
@@ -330,367 +315,17 @@ public class ClickInInventoryEvent implements Listener {
                     main.adminInventoriesGenerator.openBoderInventory(p);
                 }
             }
-            if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Configuration > Equipes")){
-                e.setCancelled(true);
-                if(it.getType() == Material.ARROW){
-                    main.adminInventoriesGenerator.openMenuInventory(p);
-                }else{
 
-                    if(it.getType() == Material.REDSTONE_BLOCK){
-                        main.gameVariables.activateTeams = true;
-                        main.teamsManager.activateTeams();
-                    }
-                    if(it.getType() == Material.EMERALD_BLOCK){
-                        main.gameVariables.activateTeams = false;
-                        main.teamsManager.desactivateTeams();
-                    }
-                    if(it.getType() == Material.REDSTONE){
-                        main.gameVariables.infiniteTeams = true;
-                    }
-                    if(it.getType() == Material.EMERALD){
-                        main.gameVariables.infiniteTeams = false;
-                        if(main.gameVariables.whiteTeam < 0) main.gameVariables.whiteTeam = 0;
-                        if(main.gameVariables.orangeTeam < 0) main.gameVariables.orangeTeam = 0;
-                        if(main.gameVariables.magentaTeam < 0) main.gameVariables.magentaTeam = 0;
-                        if(main.gameVariables.lightBlueTeam < 0) main.gameVariables.lightBlueTeam = 0;
-                        if(main.gameVariables.yellowTeam < 0) main.gameVariables.yellowTeam = 0;
-                        if(main.gameVariables.limeTeam < 0) main.gameVariables.limeTeam = 0;
-                        if(main.gameVariables.pinkTeam < 0) main.gameVariables.pinkTeam = 0;
-                        if(main.gameVariables.grayTeam < 0) main.gameVariables.grayTeam = 0;
-                        if(main.gameVariables.lightGrayTeam < 0) main.gameVariables.lightGrayTeam = 0;
-                        if(main.gameVariables.cyanTeam < 0) main.gameVariables.cyanTeam = 0;
-                        if(main.gameVariables.purpleTeam < 0) main.gameVariables.purpleTeam = 0;
-                        if(main.gameVariables.blueTeam < 0) main.gameVariables.blueTeam = 0;
-                        if(main.gameVariables.brownTeam < 0) main.gameVariables.brownTeam = 0;
-                        if(main.gameVariables.greenTeam < 0) main.gameVariables.greenTeam = 0;
-                        if(main.gameVariables.redTeam < 0) main.gameVariables.redTeam = 0;
-                        if(main.gameVariables.blackTeam < 0) main.gameVariables.blackTeam = 0;
-                    }
-                    if(main.gameVariables.activateTeams) {
-                        if (it.getType() == Material.WHITE_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.whiteTeam == 0){
-                                    main.gameVariables.whiteTeam = -1;
-                                }else{
-                                    main.gameVariables.whiteTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.whiteTeam = main.gameVariables.whiteTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.whiteTeam < 1) {
-                                        main.gameVariables.whiteTeam = 0;
-                                    } else {
-                                        main.gameVariables.whiteTeam = main.gameVariables.whiteTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.ORANGE_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.orangeTeam == 0){
-                                    main.gameVariables.orangeTeam = -1;
-                                }else{
-                                    main.gameVariables.orangeTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.orangeTeam = main.gameVariables.orangeTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.orangeTeam < 1) {
-                                        main.gameVariables.orangeTeam = 0;
-                                    } else {
-                                        main.gameVariables.orangeTeam = main.gameVariables.orangeTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.MAGENTA_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.magentaTeam == 0){
-                                    main.gameVariables.magentaTeam = -1;
-                                }else{
-                                    main.gameVariables.magentaTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.magentaTeam = main.gameVariables.magentaTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.magentaTeam < 1) {
-                                        main.gameVariables.magentaTeam = 0;
-                                    } else {
-                                        main.gameVariables.magentaTeam = main.gameVariables.magentaTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.LIGHT_BLUE_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.lightBlueTeam == 0){
-                                    main.gameVariables.lightBlueTeam = -1;
-                                }else{
-                                    main.gameVariables.lightBlueTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.lightBlueTeam = main.gameVariables.lightBlueTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.lightBlueTeam < 1) {
-                                        main.gameVariables.lightBlueTeam = 0;
-                                    } else {
-                                        main.gameVariables.lightBlueTeam = main.gameVariables.lightBlueTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.YELLOW_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.yellowTeam == 0){
-                                    main.gameVariables.yellowTeam = -1;
-                                }else{
-                                    main.gameVariables.yellowTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.yellowTeam = main.gameVariables.yellowTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.yellowTeam < 1) {
-                                        main.gameVariables.yellowTeam = 0;
-                                    } else {
-                                        main.gameVariables.yellowTeam = main.gameVariables.yellowTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.LIME_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.limeTeam == 0){
-                                    main.gameVariables.limeTeam = -1;
-                                }else{
-                                    main.gameVariables.limeTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.limeTeam = main.gameVariables.limeTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.limeTeam < 1) {
-                                        main.gameVariables.limeTeam = 0;
-                                    } else {
-                                        main.gameVariables.limeTeam = main.gameVariables.limeTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.PINK_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.pinkTeam == 0){
-                                    main.gameVariables.pinkTeam = -1;
-                                }else{
-                                    main.gameVariables.pinkTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.pinkTeam = main.gameVariables.pinkTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.pinkTeam < 1) {
-                                        main.gameVariables.pinkTeam = 0;
-                                    } else {
-                                        main.gameVariables.pinkTeam = main.gameVariables.pinkTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.GRAY_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.grayTeam == 0){
-                                    main.gameVariables.grayTeam = -1;
-                                }else{
-                                    main.gameVariables.grayTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.grayTeam = main.gameVariables.grayTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.grayTeam < 1) {
-                                        main.gameVariables.grayTeam = 0;
-                                    } else {
-                                        main.gameVariables.grayTeam = main.gameVariables.grayTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.LIGHT_GRAY_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.lightGrayTeam == 0){
-                                    main.gameVariables.lightGrayTeam = -1;
-                                }else{
-                                    main.gameVariables.lightGrayTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.lightGrayTeam = main.gameVariables.lightGrayTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.lightGrayTeam < 1) {
-                                        main.gameVariables.lightGrayTeam = 0;
-                                    } else {
-                                        main.gameVariables.lightGrayTeam = main.gameVariables.lightGrayTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.CYAN_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.cyanTeam == 0){
-                                    main.gameVariables.cyanTeam = -1;
-                                }else{
-                                    main.gameVariables.cyanTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.cyanTeam = main.gameVariables.cyanTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.cyanTeam < 1) {
-                                        main.gameVariables.cyanTeam = 0;
-                                    } else {
-                                        main.gameVariables.cyanTeam = main.gameVariables.cyanTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.PURPLE_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.purpleTeam == 0){
-                                    main.gameVariables.purpleTeam = -1;
-                                }else{
-                                    main.gameVariables.purpleTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.purpleTeam = main.gameVariables.purpleTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.purpleTeam < 1) {
-                                        main.gameVariables.purpleTeam = 0;
-                                    } else {
-                                        main.gameVariables.purpleTeam = main.gameVariables.purpleTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.BLUE_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.blueTeam == 0){
-                                    main.gameVariables.blueTeam = -1;
-                                }else{
-                                    main.gameVariables.blueTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.blueTeam = main.gameVariables.blueTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.blueTeam < 1) {
-                                        main.gameVariables.blueTeam = 0;
-                                    } else {
-                                        main.gameVariables.blueTeam = main.gameVariables.blueTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.BROWN_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.brownTeam == 0){
-                                    main.gameVariables.brownTeam = -1;
-                                }else{
-                                    main.gameVariables.brownTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.brownTeam = main.gameVariables.brownTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.brownTeam < 1) {
-                                        main.gameVariables.brownTeam = 0;
-                                    } else {
-                                        main.gameVariables.brownTeam = main.gameVariables.brownTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.GREEN_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.greenTeam == 0){
-                                    main.gameVariables.greenTeam = -1;
-                                }else{
-                                    main.gameVariables.greenTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.greenTeam = main.gameVariables.greenTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.greenTeam < 1) {
-                                        main.gameVariables.greenTeam = 0;
-                                    } else {
-                                        main.gameVariables.greenTeam = main.gameVariables.greenTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.RED_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.redTeam == 0){
-                                    main.gameVariables.redTeam = -1;
-                                }else{
-                                    main.gameVariables.redTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.redTeam = main.gameVariables.redTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.redTeam < 1) {
-                                        main.gameVariables.redTeam = 0;
-                                    } else {
-                                        main.gameVariables.redTeam = main.gameVariables.redTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                        if (it.getType() == Material.BLACK_WOOL) {
-                            if (main.gameVariables.infiniteTeams) {
-                                if(main.gameVariables.blackTeam == 0){
-                                    main.gameVariables.blackTeam = -1;
-                                }else{
-                                    main.gameVariables.blackTeam = 0;
-                                }
-                            } else {
-                                if (e.getAction() == InventoryAction.PICKUP_ALL) {
-                                    main.gameVariables.blackTeam = main.gameVariables.blackTeam + 1;
-                                }
-                                if (e.getAction() == InventoryAction.PICKUP_HALF) {
-                                    if (main.gameVariables.blackTeam < 1) {
-                                        main.gameVariables.blackTeam = 0;
-                                    } else {
-                                        main.gameVariables.blackTeam = main.gameVariables.blackTeam - 1;
-                                    }
-                                }
-                            }
-                        }
-                    }
+            if(e.getView().getTitle().startsWith(ChatColor.DARK_GREEN + "Configuration > Equipes")){
+                e.setCancelled(true);
+                if (it.getType() == Material.ARROW) {
+                    main.adminInventoriesGenerator.openMenuInventory(p);
+                }else if(it.getType() != Material.BLACK_STAINED_GLASS_PANE){
+                    main.teamsManager.switchTeam(it.getItemMeta().getDisplayName());
                     main.adminInventoriesGenerator.openTeamsInventory(p);
                 }
             }
+
             if(e.getView().getTitle().equals(ChatColor.DARK_GREEN + "Configuration > Inventaire de départ")){
                 if(it.getType() == Material.BLACK_STAINED_GLASS_PANE || it.getItemMeta().getDisplayName().equals(ChatColor.LIGHT_PURPLE + "Configuration de la partie")){
                     e.setCancelled(true);

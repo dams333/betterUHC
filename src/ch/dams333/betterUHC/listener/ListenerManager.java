@@ -5,6 +5,7 @@ import ch.dams333.betterUHC.listener.actions.ClickInInventoryEvent;
 import ch.dams333.betterUHC.listener.actions.ClickOnItemEvent;
 import ch.dams333.betterUHC.listener.block.BreakBlockEvent;
 import ch.dams333.betterUHC.listener.chat.ChatEvent;
+import ch.dams333.betterUHC.listener.connexion.LeaveEvent;
 import ch.dams333.betterUHC.listener.scenarios.*;
 import ch.dams333.betterUHC.listener.item.*;
 import ch.dams333.betterUHC.listener.block.PlaceBlockEvent;
@@ -42,9 +43,10 @@ public class ListenerManager {
         main.getServer().getPluginManager().registerEvents(new ParanoiaEvent(main), main);
         main.getServer().getPluginManager().registerEvents(new HasteyBoysEvent(main), main);
         main.getServer().getPluginManager().registerEvents(new NetherLessEvent(main), main);
-        main.getServer().getPluginManager().registerEvents(main.savesManager, main);
         main.getServer().getPluginManager().registerEvents(new MoveEvent(main), main);
         main.getServer().getPluginManager().registerEvents(new InventorEvent(main), main);
         main.getServer().getPluginManager().registerEvents(new EntitiesSpawnEvent(main), main);
+        main.getServer().getPluginManager().registerEvents(new FlowerPowerEvent(main), main);
+        main.getServer().getPluginManager().registerEvents(new LeaveEvent(main), main);
     }
 }
