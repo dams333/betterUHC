@@ -20,8 +20,8 @@ public class BloodDiamondEvent implements Listener {
             Player p = e.getPlayer();
             if(e.isCancelled()) return;
             if (e.getBlock().getType() == Material.DIAMOND_ORE) {
-                if (p.getHealth() > 1) {
-                    p.setHealth(p.getHealth() - 1);
+                if (p.getHealth() > (main.gameScenariosManager.getScenarioArgument("blood diamond", "Perte à chaque diamant") * 2)) {
+                    p.setHealth(p.getHealth() - (main.gameScenariosManager.getScenarioArgument("blood diamond", "Perte à chaque diamant") * 2));
                 } else {
                     e.setCancelled(true);
                     p.sendMessage(ChatColor.RED + "Cela vous tuerait");

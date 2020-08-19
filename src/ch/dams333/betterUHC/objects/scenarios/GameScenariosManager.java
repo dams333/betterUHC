@@ -44,7 +44,7 @@ public class GameScenariosManager {
         gameScenarios.add(new GameScenario("Netheribus", Arrays.asList(ChatColor.GRAY + "A l'activation du PVP, tous les", ChatColor.GRAY + "joueurs qui ne sont pas dans le nether perdront", ChatColor.GRAY + "1 coeur toutes les 15 sec"), Material.NETHERRACK, null));
         gameScenarios.add(new GameScenario("EnderPearl drop", Arrays.asList(ChatColor.GRAY + "A l'activation du PVP, toutes les", ChatColor.GRAY + "X minutes, les joueurs", ChatColor.GRAY + "recevront une enderpearl"), Material.ENDER_PEARL, Arrays.asList(new ScenarioArgument("Minutes entre chaque enderpearl", (double) 10, Material.CLOCK, (double) 1))));
         gameScenarios.add(new GameScenario("CatEyes", Arrays.asList(ChatColor.GRAY + "Les joueurs ont night vision infinie"), Material.ENDER_EYE, null));
-        gameScenarios.add(new GameScenario("SwitchHeroes", Arrays.asList(ChatColor.GRAY + "Quand un joueur touche un autre à l'arc,", ChatColor.GRAY + "il a X% de chance d'échanger sa place", ChatColor.GRAY + "avec celui-ci"), Material.CHORUS_FRUIT, Arrays.asList(new ScenarioArgument("Pourcentage de chance:", (double) 10, Material.BOW, (double) 5))));
+        gameScenarios.add(new GameScenario("SwitchHeroes", Arrays.asList(ChatColor.GRAY + "Quand un joueur touche un autre à l'arc,", ChatColor.GRAY + "il a X% de chance d'échanger sa place", ChatColor.GRAY + "avec celui-ci"), Material.CHORUS_FRUIT, Arrays.asList(new ScenarioArgument("Pourcentage de chance", (double) 10, Material.BOW, (double) 5))));
         gameScenarios.add(new GameScenario("BlockRush", Arrays.asList(ChatColor.GRAY + "Quand un joueur casse un bloc qui n'a jamais,", ChatColor.GRAY + "été cassé, il gagne X lingot d'or"), Material.GOLD_INGOT, Arrays.asList(new ScenarioArgument("Nombre de lingots", (double) 1, Material.GOLD_INGOT, (double) 1))));
         gameScenarios.add(new GameScenario("Inventor Paranoia", Arrays.asList(ChatColor.GRAY + "Quand un joueur craft un item qui n'a,", ChatColor.GRAY + "jamais été crafté, ses coordonées sont révélées"), Material.CRAFTING_TABLE, null));
         gameScenarios.add(new GameScenario("Random start item", Arrays.asList(ChatColor.GRAY + "Au lancement, chaque joueur obtient", ChatColor.GRAY + "un objet aléatoire dans une quantité aléatoire"), Material.STICK, null));
@@ -126,5 +126,18 @@ public class GameScenariosManager {
 
         inv.setItem(8, main.API.itemStackManager.create(Material.ARROW, ChatColor.GRAY + "Revenir en arrière"));
         e.getWhoClicked().openInventory(inv);
+    }
+
+    public Double getScenarioArgument(String scenario, String argument){
+        for(GameScenario gameScenario : this.gameScenarios){
+            if(gameScenario.getName().equalsIgnoreCase(scenario)) {
+                for(ScenarioArgument arg : gameScenario.getArguments()){
+                    if (arg.getName().equalsIgnoreCase(argument)) {
+                        return arg.getValue();
+                    }
+                }
+            }
+        }
+        return (double) 0;
     }
 }

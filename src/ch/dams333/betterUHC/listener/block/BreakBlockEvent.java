@@ -39,7 +39,7 @@ public class BreakBlockEvent implements Listener {
         if(!e.isCancelled()){
             if(main.gameScenariosManager.isScenarioActivate("blockrush")){
                 if(!breaked.contains(e.getBlock().getType())){
-                    e.getBlock().getLocation().getWorld().dropItemNaturally(e.getBlock().getLocation(), new ItemStack(Material.GOLD_INGOT));
+                    e.getBlock().getLocation().getWorld().dropItemNaturally(e.getBlock().getLocation(), new ItemStack(Material.GOLD_INGOT, Integer.parseInt(String.valueOf(main.gameScenariosManager.getScenarioArgument("blockrush", "Nombre de lingots")))));
                     breaked.add(e.getBlock().getType());
                     Bukkit.broadcastMessage(e.getPlayer().getDisplayName() + ChatColor.GOLD + " a cassé " + ChatColor.BOLD + e.getBlock().getType().name() + ChatColor.RESET + "" + ChatColor.GOLD + " pour la première fois");
                 }

@@ -26,7 +26,7 @@ public class LongShotEvent implements Listener {
                         Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
                         if(shooted.getLocation().distance(shooter.getLocation()) >= 75){
                             Bukkit.broadcastMessage(shooter.getDisplayName() + ChatColor.GREEN + " a fait un longshot de " + shooted.getLocation().distance(shooter.getLocation()) + " blocs");
-                            if(shooter.getHealth() <= (shooter.getMaxHealth() - 2)){
+                            if(shooter.getHealth() <= (shooter.getMaxHealth() - main.gameScenariosManager.getScenarioArgument("longshot", "Distance nécessaire"))){
                                 shooter.setHealth(shooter.getHealth() + 2);
                             }else{
                                 shooter.setHealth(shooter.getMaxHealth());
@@ -42,7 +42,7 @@ public class LongShotEvent implements Listener {
                     if(((Arrow) e.getDamager()).getShooter() instanceof Player){
                         Player shooted = (Player) e.getEntity();
                         Player shooter = (Player) ((Arrow) e.getDamager()).getShooter();
-                        if(main.API.random(1, 100) <= 10){
+                        if(main.API.random(1, 100) <= main.gameScenariosManager.getScenarioArgument("switchheroes", "Pourcentage de chance")){
                             Location tp1 = shooted.getLocation();
                             Location tp2 = shooter.getLocation();
                             shooted.teleport(tp2);

@@ -418,7 +418,7 @@ public class GameManager {
         if(gameTimer > main.gameVariables.pvpTime && gameTimer % 30 == 0){
             if(main.gameScenariosManager.isScenarioActivate("skyhigh")){
                 for(Player p : this.inGamePlayers){
-                    if(p.getLocation().getY() < 150){
+                    if(p.getLocation().getY() < main.gameScenariosManager.getScenarioArgument("skyhigh", "Couche nécessaire")){
                         if(p.getHealth() > 2){
                             p.setHealth(p.getHealth() - 2);
                         }else{
@@ -429,7 +429,7 @@ public class GameManager {
             }
             if(main.gameScenariosManager.isScenarioActivate("underground")){
                 for(Player p : this.inGamePlayers){
-                    if(p.getLocation().getY() > 40){
+                    if(p.getLocation().getY() > main.gameScenariosManager.getScenarioArgument("underground", "Couche nécessaire")){
                         if(p.getHealth() > 2){
                             p.setHealth(p.getHealth() - 2);
                         }else{
@@ -454,7 +454,7 @@ public class GameManager {
             }
         }
 
-        if(gameTimer > main.gameVariables.pvpTime && gameTimer % 600 == 0) {
+        if(gameTimer > main.gameVariables.pvpTime && gameTimer % (main.gameScenariosManager.getScenarioArgument("enderpearl drop", "Minutes entre chaque enderpearl") * 60) == 0) {
             if (main.gameScenariosManager.isScenarioActivate("enderpearl drop")) {
                 for (Player p : this.inGamePlayers) {
                     p.getInventory().addItem(main.API.itemStackManager.create(Material.ENDER_PEARL));
@@ -462,37 +462,8 @@ public class GameManager {
             }
         }
 
-        if(gameTimer > 1 && gameTimer % 290 == 0){
-            if(main.gameScenariosManager.isScenarioActivate("playersswitch")){
-                Bukkit.broadcastMessage(ChatColor.GOLD + "Switch dans 10 secondes !");
-            }
-        }
 
-        if(gameTimer > 1 && gameTimer % 300 == 0){
-            if(main.gameScenariosManager.isScenarioActivate("playersswitch")){
-                Map<Player, Location> playersLoc = new HashMap<>();
-                for(Player p : this.inGamePlayers){
-                    playersLoc.put(p, p.getLocation());
-                }
-                for(Player p : playersLoc.keySet()){
-                    boolean found = false;
-                    Player next = null;
-                    for(Player pl : playersLoc.keySet()){
-                        if(found){
-                            next = pl;
-                            break;
-                        }else{
-                            if(pl == p){
-                                found = true;
-                            }
-                        }
-                    }
-                    if(next == null){
-                        next = (Player) playersLoc.keySet().toArray()[0];
-                    }
-                    p.teleport(playersLoc.get(next));
-                }
-            }
+        if(gameTimer > 1 && gameTimer % (main.gameScenariosManager.getScenarioArgument("coordinateDrops", "Minutes entre chaque drops") * 60) == 0){
 
             if(main.gameScenariosManager.isScenarioActivate("coordinateDrops")){
                 for(Player p : this.inGamePlayers){
@@ -589,7 +560,7 @@ public class GameManager {
                     armorStand.setInvulnerable(true);
                     armorStand.setSmall(true);
                     armorStand.setGravity(false);
-                    BombTask bombTask = new BombTask(leftBlock.getLocation(), armorStand);
+                    BombTask bombTask = new BombTask(leftBlock.getLocation(), armorStand, main);
                     bombTask.runTaskTimer(main, 20, 20);
                 }
             }
